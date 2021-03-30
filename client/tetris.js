@@ -158,7 +158,7 @@ function rotation(matrix, dir) {  //rotation par symétrie de la pièce
 
 var nbappels = 0;
 function Drop() {  //la pièce tombe
-	nbappels += 1; // nombre d'appels à la fonction Drop (pour
+	nbappels += 1; // nombre d'appels à la fonction Drop (pour envoi de lignes)
     joueur.pos.y++;
     if (gestion_collision(arena, joueur)) {
         joueur.pos.y--;
@@ -193,10 +193,6 @@ function Reset() {
     joueur.pos.x = (arena[0].length / 2 | 0) -
                    (joueur.matrix[0].length / 2 | 0);
     if (gestion_collision(arena, joueur)) {
-        for (y=0;y<arena.length;y++){
-            arena[y].fill(0);}
-        joueur.score = 0;
-        updateScore();
 		socket.emit('defaite', {});
 		defaite.style.display = "flex";
 		isPaused = true;
