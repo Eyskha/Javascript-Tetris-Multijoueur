@@ -24,10 +24,17 @@ io.on('connection', (socket) => {
   });
   
   socket.on('full rows', data => {
-	console.log(data);
 	socket.broadcast.emit('gift from player 2', {
 		nbrows: data.nbrows
 	});
+  });
+  
+  socket.on('defaite', data => {
+	socket.broadcast.emit('victoire', {});
+  });
+  
+  socket.on('restart', data => {
+	socket.broadcast.emit('restart', {});
   });
   
   socket.on('disconnect', () => {

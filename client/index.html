@@ -9,6 +9,9 @@
 			font-family: sans-serif;
 			font-size: 2em;
 			text-align: center;
+			justify-content: center;
+			display: flex;
+			flex-direction: row;
 		}
 		canvas {
 			height: 90vh;
@@ -16,15 +19,55 @@
 		#canvasjoueur1{
 			border: solid .2em #fff;
 		}
+		.joueur{
+			display: flex;
+			flex-direction: column;
+			margin-left: 1vh;
+			margin-right: 1vh;
+		}
+		.finpartie{
+			z-index: 2;
+			position: absolute;
+			top: 37vh;
+			left: 0;
+			width: 100vw;
+			height: 26vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+		.finpartie span{
+			text-transform: uppercase;
+			font-size: 70px;
+		}
+		#victoire{
+			display: none;
+			background-color: #FFFFFF55;
+		}
+		#defaite{
+			display: none;
+			background-color: #FF000055;
+		}
 	</style>
 </head>
 
 <meta charset="utf-8">
 
 <body>
-    <div id="score"></div>
-    <canvas id="canvasjoueur1" width="240" height="400"></canvas>
-	<canvas id="canvasjoueur2" width="240" height="400"></canvas>
+    <div class="joueur">
+		<span id="scorejoueur1"></span>
+		<canvas id="canvasjoueur1" width="240" height="400"></canvas>
+	</div>
+	<div class="joueur">
+		<span id="scorejoueur2"></span>
+		<canvas id="canvasjoueur2" width="240" height="400"></canvas>
+	</div>
+	<div class="finpartie" id="victoire">
+		<span>Victoire</span>
+	</div>
+	<div class="finpartie" id="defaite">
+		<span>Défaite</span>
+	</div>
 	<script src="/socket.io/socket.io.js"></script>
     <script src="tetris.js"></script>
 </body>

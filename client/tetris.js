@@ -61,7 +61,7 @@ function nombre_entier_aleatoire(max) {
     return a;
 }
 
-function NewPiece(type){
+function NewPiece(type){  //matrice des pièces du tetris
     if (type === 'I') {
         return [
             [0, 1, 0, 0],
@@ -136,7 +136,7 @@ function ajout_piece_joueur(arena, joueur) {  //on ajoute la matrice du joueur �
     };
 }
 
-function rotation(matrix, dir) {
+function rotation(matrix, dir) {  //rotation par symétrie de la pièce
     for (let y = 0; y < matrix.length; ++y) {
         for (let x = 0; x < y; ++x) {
             [
@@ -157,13 +157,13 @@ function rotation(matrix, dir) {
 }
 
 var nbappels = 0;
-function playerDrop() {
-	nbappels += 1; // nombre d'appels à la fonction playerDrop (pour 
+function Drop() {  //la pièce tombe
+	nbappels += 1; // nombre d'appels à la fonction Drop (pour
     joueur.pos.y++;
     if (gestion_collision(arena, joueur)) {
         joueur.pos.y--;
         ajout_piece_joueur(arena, joueur);
-        playerReset();
+        Reset();
         arenaSweep();
         updateScore();
 		
@@ -179,27 +179,31 @@ function playerDrop() {
 	});
 }
 
-function playerMove(offset) {
+function Move(offset) {  //la pièce va à gauche ou à droite si il n'y a pas de collision
     joueur.pos.x += offset;
     if (gestion_collision(arena, joueur)) {
         joueur.pos.x -= offset;
     }
 }
 
-function playerReset() {
-    const pieces = 'TJLOSZI';
+function Reset() {
+    const pieces = 'SZITJLO';
     joueur.matrix = NewPiece(pieces[pieces.length * Math.random() | 0]);
     joueur.pos.y = 0;
     joueur.pos.x = (arena[0].length / 2 | 0) -
                    (joueur.matrix[0].length / 2 | 0);
     if (gestion_collision(arena, joueur)) {
-        arena.forEach(row => row.fill(0));
+        for (y=0;y<arena.length;y++){
+            arena[y].fill(0);}
         joueur.score = 0;
         updateScore();
+		socket.emit('defaite', {});
+		defaite.style.display = "flex";
+		isPaused = true;
     }
 }
 
-function rotation_piece(dir) {
+function rotation_piece(dir) {   //on tourne la pièce suite à l'appui sur la touche q ou w
     const pos = joueur.pos.x;
     let offset = 1;
     rotation(joueur.matrix, dir);
@@ -215,39 +219,54 @@ function rotation_piece(dir) {
 }
 
 let dropCounter = 0;
-let dropInterval = 1000;
+let interval = 1000;  //temps entre deux mouvements de la pièce
 
 let lastTime = 0;
-function update(time = 0) {
-    const deltaTime = time - lastTime;
+function update(time = 0) { //on regarde si l'intervalle de temps est dépassé, si oui la pièce tombe d'un cran de plus
+	if(!isPaused){
+		const deltaTime = time - lastTime;
 
-    dropCounter += deltaTime;
-    if (dropCounter > dropInterval) {
-        playerDrop();
-		socket.on('arena player 2', data => {
-			arenajoueur2 = data.player2arena;
-			joueur2 = data.player2joueur;
-			drawArena(contextjoueur2, canvasjoueur2, arenajoueur2,joueur2);
+		dropCounter += deltaTime;
+		if (dropCounter > interval) {
+			Drop();
+			socket.on('arena player 2', data => {
+				arenajoueur2 = data.player2arena;
+				joueur2 = data.player2joueur;
+				scorejoueur2.innerHTML = joueur2.score;
+				drawArena(contextjoueur2, canvasjoueur2, arenajoueur2,joueur2);
+			});
+		}
+		
+		lastTime = time;
+		
+		socket.emit('arena update', {
+			arena: arena,
+			joueur: joueur
 		});
-    }
-	
-    lastTime = time;
-	
-	socket.emit('arena update', {
-		arena: arena,
-		joueur: joueur
-	});
+		
+		socket.on('victoire', data => {
+			victoire.style.display = "flex";
+			isPaused = true;
+		});	
 
-    drawArena(context, canvas, arena, joueur);
+		drawArena(context, canvas, arena, joueur);
+	}
+	if(isPaused){
+		socket.once('restart', data => {
+			restart();
+		});
+	}
+
     requestAnimationFrame(update);
-	
 }
 
 function addRowsArena(nbrows){
 	if(nbrows > 0){
 		// Si 1ere ligne est non vide alors defaite
 		if(arena[0].reduce((a,b) => a+b) != 0){
-			// Game over
+			socket.emit('defaite', {});
+			defaite.style.display = "flex";
+			isPaused = true;
 		}
 		else {
 			var aleat = nombre_entier_aleatoire(12);
@@ -260,21 +279,35 @@ function addRowsArena(nbrows){
 	}
 }
 
-function updateScore() {
-    document.getElementById('score').innerText = joueur.score;
+function updateScore() {//mise à jour du score
+    document.getElementById('scorejoueur1').innerText = joueur.score;
 }
+
+function restart(){
+	isPaused = false;
+	defaite.style.display = "none";
+	victoire.style.display = "none";
+	for (y=0;y<arena.length;y++){
+		arena[y].fill(0);
+	}
+	Reset();
+	socket.emit('restart', {});
+}
+
 
 document.addEventListener('keydown', event => {
     if (event.keyCode === 37) {
-        playerMove(-1);
+        Move(-1);
     } else if (event.keyCode === 39) {
-        playerMove(1);
+        Move(1);
     } else if (event.keyCode === 40) {
-        playerDrop();
+        Drop();
     } else if (event.keyCode === 65) {
         rotation_piece(-1);
     } else if (event.keyCode === 90) {
         rotation_piece(1);
+    } else if (event.keyCode === 82 && isPaused) {
+        restart();
     }
 });
 
@@ -305,12 +338,13 @@ var joueur2 = {
 };
 
 var nbRowsReceived = 0;
+var isPaused = false;
 
 socket.on('user connected', data => {
 	var idjoueur = data.userID;
 	console.log(idjoueur);
 });
 
-playerReset();
+Reset();
 updateScore();
 update();
