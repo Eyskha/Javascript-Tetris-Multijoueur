@@ -27,7 +27,7 @@ Le serveur et l'adresse étant locaux, le mode multi-joueur doit être simulé. 
 Les fonctionnalités suivantes ont été implémentées.
 
 ### Mouvements de base du tetrominos
-Trois déplacements sont possibles : déplacements vers la gauche, la droite et le bas. Ces mouvements sont respectivement reliés aux touches ← , → et ↑ du clavier. Il est également possible de tourner la pièce dans le sens horaire avec la touche Z et anti-horaire avec la touche A.
+Trois déplacements sont possibles : déplacements vers la gauche, la droite et le bas. Ces mouvements sont respectivement reliés aux touches ← , → et ↓ du clavier. Il est également possible de tourner la pièce dans le sens horaire avec la touche Z et anti-horaire avec la touche A.
 
 ### Chute automatique du tetrominos
 A bout d'un intervalle de temps fixé, la pièce chute d'une case.
@@ -50,5 +50,13 @@ Un joueur perd la partie soit lorsqu'il reçoit une ligne qui fait dépasser ses
 
 ### Possibilité de relancer une partie après une victoire/défaite
 Après la mise en pause du jeu suite à une victoire/défaite, les joueurs peuvent appuyer sur la touche R afin de relancer une partie avec leur adversaire.
+
+### Possibilité de jouer plusieurs parties en parallèle
+Le nombre de joueur n'est pas limité. Les deux premiers joueurs connectés sont placés dans la même partie, les troisième et quatrième également, etc. Lorsque notre adversaire est déconnecté, il est possible de continuer à jouer seul si le nombre de joueurs connectés est impair et si ce nombre est pair, alors un nouvel adversaire nous est proposé.
+
+## Détails techniques : 
+
+- un serveur en nodejs
+- un canvas avec html et js 
 
 

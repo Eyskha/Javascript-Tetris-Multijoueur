@@ -68,8 +68,16 @@ io.on('connection', (socket) => {
   
   socket.on('disconnect', () => {
 	console.log('user disconnected');
-	connectedPlayers.splice(connectedPlayers.indexOf(socket.id),1);
+	index = connectedPlayers.indexOf(socket.id);
+	connectedPlayers.splice(index,1);
+	if(index%2==0){		
+		connectedPlayers.push(connectedPlayers.splice(index,1)[0]);
+	}
+	else{
+		connectedPlayers.push(connectedPlayers.splice(index-1,1)[0]);
+	}
 	console.log("Users connected :",connectedPlayers.length);
+	console.log(connectedPlayers);
   });
 });
 
